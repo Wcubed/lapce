@@ -112,14 +112,13 @@ fn installed_view(plugin: PluginData) -> impl View {
     let ui_line_height = plugin.common.ui_line_height;
     let volts = plugin.installed;
     let config = plugin.common.config;
-    let view_id = plugin.common.view_id;
     let disabled = plugin.disabled;
     let workspace_disabled = plugin.workspace_disabled;
 
-    let plugin_controls = {
-        move |plugin: PluginData, volt: VoltInfo, meta: VoltMetadata| {
-            let volt_id = volt.id();
-            let menu =
+    let plugin_controls =
+        {
+            move |plugin: PluginData, volt: VoltInfo, meta: VoltMetadata| {
+                let volt_id = volt.id();
                 Menu::new("")
                     .entry(MenuItem::new("Reload Plugin").action({
                         let plugin = plugin.clone();
@@ -143,7 +142,7 @@ fn installed_view(plugin: PluginData) -> impl View {
                             }),
                     )
                     .entry(
-                        MenuItem::new("Disalbe")
+                        MenuItem::new("Disable")
                             .enabled(disabled.with_untracked(|disabled| {
                                 !disabled.contains(&volt_id)
                             }))
@@ -170,7 +169,7 @@ fn installed_view(plugin: PluginData) -> impl View {
                             }),
                     )
                     .entry(
-                        MenuItem::new("Disalbe For Workspace")
+                        MenuItem::new("Disable For Workspace")
                             .enabled(workspace_disabled.with_untracked(|disabled| {
                                 !disabled.contains(&volt_id)
                             }))
@@ -186,10 +185,9 @@ fn installed_view(plugin: PluginData) -> impl View {
                         move || {
                             plugin.uninstall_volt(meta.clone());
                         }
-                    }));
-            view_id.get_untracked().show_context_menu(menu, Point::ZERO);
-        }
-    };
+                    }))
+            }
+        };
 
     let view_fn = move |volt: InstalledVoltData, plugin: PluginData| {
         let meta = volt.meta.get_untracked();
@@ -245,17 +243,18 @@ fn installed_view(plugin: PluginData) -> impl View {
                                 }),
                                 clickable_icon(
                                     || LapceIcons::SETTINGS,
-                                    move || {
-                                        plugin_controls(
-                                            plugin.clone(),
-                                            local_meta.info(),
-                                            local_meta.clone(),
-                                        )
-                                    },
+                                    || (),
                                     || false,
                                     || false,
                                     config,
                                 )
+                                .popout_menu(move || {
+                                    plugin_controls(
+                                        plugin.clone(),
+                                        local_meta.info(),
+                                        local_meta.clone(),
+                                    )
+                                })
                                 .style(|| Style::BASE.padding_left_px(6.0)),
                             )
                         })
